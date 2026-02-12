@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SQ Online — Luxury Dark</title>
+<style>
+  :root{
+    --bg:#06070a;
+    --panel: rgba(255,255,255,.05);
+    --panel2: rgba(255,255,255,.08);
+    --stroke: rgba(255,255,255,.12);
+    --stroke2: rgba(255,255,255,.18);
+    --text: rgba(255,255,255,.92);
+    --muted: rgba(255,255,255,.68);
+    --muted2: rgba(255,255,255,.52);
+    --accent: rgba(130,175,255,.95);
+    --accent2: rgba(255,120,200,.85);
+    --shadow: 0 18px 70px rgba(0,0,0,.55);
+    --radius: 22px;
+    --radius2: 16px;
+    --max: 1120px;
+  }
+
+  /* Luxury typography (no external fonts) */
+  html,body{height:100%}
+  body{
+    margin:0;
+    background:
+      radial-gradient(900px 500px at 70% -10%, rgba(130,175,255,.16), transparent 55%),
+      radial-gradient(700px 500px at 20% 15%, rgba(255,120,200,.11), transparent 55%),
+      radial-gradient(900px 700px at 50% 85%, rgba(130,175,255,.10), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family: ui-serif, "Iowan Old Style","Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    letter-spacing: .2px;
+    overflow-x:hidden;
+  }
+
+  a{color:inherit; text-decoration:none}
+  .wrap{max-width:var(--max); margin:0 auto; padding:0 18px}
+  .pill{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:10px 14px;
+    border-radius:999px;
+    border:1px solid var(--stroke);
+    background:rgba(255,255,255,.03);
+    backdrop-filter: blur(14px);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    box-shadow: 0 0 16px rgba(130,175,255,.65);
+  }
+
+  /* Top nav */
+  .topbar{
+    position:fixed; inset:0 0 auto 0;
+    z-index:50;
+    padding:14px 0;
+    background: linear-gradient(to bottom, rgba(6,7,10,.86), rgba(6,7,10,.45), transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .topbar .row{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-weight:700; letter-spacing:.12em;
+    text-transform: uppercase;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    font-size:12px;
+  }
+  .brand .mark{
+    width:26px; height:26px; border-radius:10px;
+    border:1px solid var(--stroke2);
+    background: radial-gradient(120% 120% at 20% 20%, rgba(255,255,255,.12), rgba(255,255,255,.02));
+    display:grid; place-items:center;
+    box-shadow: var(--shadow);
+  }
+  .brand .mark:before{
+    content:"SQ";
+    font-size:11px; letter-spacing:.14em;
+    font-weight:800;
+  }
+
+  .navlinks{
+    display:flex; gap:18px; align-items:center;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size:13px;
+    color:var(--muted);
+  }
+  .navlinks a{opacity:.9}
+  .navlinks a:hover{color:var(--text)}
+  .cta{
+    display:inline-flex; align-items:center; justify-content:center;
+    height:38px; padding:0 14px;
+    border-radius:14px;
+    border:1px solid rgba(130,175,255,.28);
+    background: linear-gradient(135deg, rgba(130,175,255,.15), rgba(255,120,200,.10));
+    box-shadow: 0 10px 40px rgba(130,175,255,.10);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight:650;
+    letter-spacing:.02em;
+  }
+  .cta:hover{transform: translateY(-1px)}
+  .cta:active{transform: translateY(0)}
+  .hide-md{display:none}
+  @media (min-width:860px){ .hide-md{display:inline-flex} }
+
+  /* Menu button */
+  .menu-btn{
+    position:fixed; top:16px; left:16px; z-index:60;
+    width:44px; height:44px; border-radius:16px;
+    border:1px solid var(--stroke);
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(14px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:5px;
+    cursor:pointer;
+    box-shadow: 0 16px 60px rgba(0,0,0,.35);
+  }
+  .menu-btn span{
+    width:18px;height:2px;border-radius:2px;
+    background:rgba(255,255,255,.9);
+  }
+  .menu-btn:hover{border-color: rgba(255,255,255,.22)}
+
+  /* Side menu */
+  .overlay{
+    position:fixed; inset:0; z-index:59;
+    background: rgba(0,0,0,.55);
+    opacity:0; pointer-events:none;
+    transition: opacity .22s ease;
+  }
+  .side{
+    position:fixed; top:0; left:0; z-index:60;
+    width:min(360px, 88vw); height:100vh;
+    transform: translateX(-104%);
+    transition: transform .26s ease;
+    background: rgba(12,13,18,.72);
+    backdrop-filter: blur(18px);
+    border-right: 1px solid rgba(255,255,255,.10);
+    padding:18px 16px;
+  }
+  body.menu-open .overlay{opacity:1; pointer-events:auto}
+  body.menu-open .side{transform: translateX(0)}
+
+  .sideTop{display:flex; align-items:center; justify-content:space-between; padding:6px 6px 14px}
+  .sideTitle{
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight:800;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:rgba(255,255,255,.82);
+  }
+  .x{
+    width:42px;height:42px;border-radius:16px;
+    border:1px solid var(--stroke);
+    background: transparent;
+    color:rgba(255,255,255,.92);
+    font-size:26px; line-height:1;
+    cursor:pointer;
+  }
+  .sideNav{display:flex; flex-direction:column; gap:10px; padding:4px}
+  .slink,.sacc{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 12px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.04);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight:650;
+    font-size:13px;
+    letter-spacing:.02em;
+  }
+  .slink:hover,.sacc:hover{background: rgba(255,255,255,.07)}
+  .sacc{cursor:pointer; width:100%}
+  .chev{opacity:.75}
+  .sub{display:none; margin-top:-6px; margin-left:14px; padding:10px 10px 12px;
+    border-left: 1px solid rgba(255,255,255,.12);
+  }
+  .sub a{
+    display:block; padding:10px 10px;
+    border-radius:12px;
+    color:rgba(255,255,255,.78);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size:13px;
+  }
+  .sub a:hover{background: rgba(255,255,255,.06)}
+
+  /* Hero */
+  .hero{
+    padding:120px 0 36px;
+    position:relative;
+  }
+  .heroGrid{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:22px;
+    align-items:start;
+  }
+  @media (min-width:940px){
+    .heroGrid{grid-template-columns: 1.15fr .85fr; gap:28px; align-items:stretch;}
+  }
+  .hTitle{
+    font-size:44px;
+    line-height:1.03;
+    margin:14px 0 12px;
+    font-weight:800;
+    letter-spacing:-.8px;
+  }
+  @media (min-width:940px){ .hTitle{font-size:62px} }
+  .hLead{
+    color:var(--muted);
+    font-size:16px;
+    line-height:1.6;
+    max-width: 52ch;
+    margin:0 0 20px;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  }
+  .heroActions{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center;
+    height:46px; padding:0 18px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.04);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight:700;
+    letter-spacing:.02em;
+    cursor:pointer;
+    transition: transform .18s ease, background .18s ease, border-color .18s ease;
+  }
+  .btn.primary{
+    border-color: rgba(130,175,255,.35);
+    background: linear-gradient(135deg, rgba(130,175,255,.18), rgba(255,120,200,.11));
+  }
+  .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.06)}
+  .btn:active{transform: translateY(0)}
+  .kpis{
+    display:flex; gap:14px; flex-wrap:wrap;
+    margin-top:18px;
+  }
+  .kpi{
+    padding:12px 14px;
+    border-radius:18px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+    backdrop-filter: blur(12px);
+  }
+  .kpi b{display:block; font-size:16px; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+  .kpi span{color:var(--muted2); font-size:12px; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+
+  /* Hero card */
+  .heroCard{
+    border-radius: var(--radius);
+    border:1px solid rgba(255,255,255,.12);
+    background:
+      radial-gradient(800px 420px at 20% 20%, rgba(130,175,255,.18), transparent 50%),
+      radial-gradient(700px 420px at 70% 40%, rgba(255,120,200,.14), transparent 55%),
+      rgba(255,255,255,.04);
+    box-shadow: var(--shadow);
+    padding:18px;
+    overflow:hidden;
+    position:relative;
+    min-height: 320px;
+  }
+  .heroCard:before{
+    content:"";
+    position:absolute; inset:-2px;
+    background: linear-gradient(120deg, rgba(130,175,255,.30), rgba(255,120,200,.22), transparent 65%);
+    opacity:.22;
+    filter: blur(18px);
+    pointer-events:none;
+  }
+  .miniHeader{
+    display:flex; justify-content:space-between; align-items:center;
+    position:relative;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    color:rgba(255,255,255,.80);
+  }
+  .miniHeader small{opacity:.8}
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px; border-radius:999px;
+    background: rgba(0,0,0,.22);
+    border:1px solid rgba(255,255,255,.14);
+  }
+  .chip i{
+    width:8px; height:8px; border-radius:99px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display:inline-block;
+  }
+  .cards{
+    display:grid; grid-template-columns: 1fr 1fr; gap:12px;
+    margin-top: 16px;
+    position:relative;
+  }
+  .card{
+    border-radius: 18px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.20);
+    padding:12px;
+    overflow:hidden;
+  }
+  .thumb{
+    height:96px;
+    border-radius:14px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+    overflow:hidden;
+  }
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+  .meta{display:flex; justify-content:space-between; gap:10px; margin-top:10px; align-items:center}
+  .meta b{
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size:13px;
+  }
+  .meta span{
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size:12px;
+    color:rgba(255,255,255,.72);
+  }
+
+  /* Section styling */
+  section{padding:64px 0}
+  .sectionHead{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:16px;
+    margin-bottom:18px;
+  }
+  .sectionHead h2{
+    margin:0;
+    font-size:26px;
+    letter-spacing:-.2px;
+  }
+  .sectionHead p{
+    margin:0;
+    color:var(--muted);
+    max-width: 54ch;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size:14px;
+    line-height:1.6;
+  }
+
+  /* Scroll reveal (the “cool” effect) */
+  .reveal{
+    opacity:0;
+    transform: translateY(18px) scale(.985);
+    filter: blur(10px);
+    transition: opacity .75s cubic-bezier(.2,.8,.2,1),
+                transform .75s cubic-bezier(.2,.8,.2,1),
+                filter .75s cubic-bezier(.2,.8,.2,1);
+    will-change: transform, opacity, filter;
+  }
+  .reveal.in{
+    opacity:1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  .reveal.delay1{transition-delay:.08s}
+  .reveal.delay2{transition-delay:.16s}
+  .reveal.delay3{transition-delay:.24s}
+
+  /* Double marquee */
+  .marquee{
+    position:relative;
+    overflow:hidden;
+    border-radius: var(--radius);
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+    padding:18px 0;
+    box-shadow: 0 18px 70px rgba(0,0,0,.35);
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  }
+  .track{
+    display:flex;
+    gap:14px;
+    width:max-content;
+    padding:0 14px;
+    animation: scrollL 24s linear infinite;
+    will-change: transform;
+  }
+  .track.r{animation-name: scrollR; animation-duration: 28s;}
+  .marquee:hover .track{animation-play-state:paused}
+  @keyframes scrollL{from{transform:translateX(0)} to{transform:translateX(-50%)}}
+  @keyframes scrollR{from{transform:translateX(-50%)} to{transform:translateX(0)}}
+
+  .pCard{
+    flex:0 0 auto;
+    width:270px;
+    border-radius: 20px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.22);
+    overflow:hidden;
+    transform: translateZ(0);
+  }
+  .pImg{height:160px; background: rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.08)}
+  .pImg img{width:100%; height:100%; object-fit:cover; display:block}
+  .pInfo{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; padding:12px 12px 14px}
+  .pInfo b{
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size:13.5px; letter-spacing:.01em;
+  }
+  .pInfo span{
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-size:12px; color:rgba(255,255,255,.72);
+  }
+  .pCard:hover{transform: translateY(-2px); transition:.2s}
+
+  /* Shopping list */
+  .grid2{display:grid; grid-template-columns:1fr; gap:16px}
+  @media (min-width:940px){ .grid2{grid-template-columns: 1fr 1fr;} }
+
+  .panel{
+    border-radius: var(--radius);
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+    box-shadow: 0 18px 70px rgba(0,0,0,.35);
+    padding:18px;
+  }
+  .panel h3{margin:0 0 10px; font-size:18px}
+  .panel p{margin:0 0 14px; color:var(--muted); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size:14px; line-height:1.6}
+
+  .inputRow{display:flex; gap:10px}
+  .input{
+    flex:1;
+    height:44px;
+    border-radius: 14px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(0,0,0,.25);
+    color:var(--text);
+    padding:0 12px;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    outline:none;
+  }
+  .input:focus{border-color: rgba(130,175,255,.35)}
+  .smallBtn{
+    height:44px; padding:0 14px;
+    border-radius:14px;
+    border:1px solid rgba(130,175,255,.35);
+    background: linear-gradient(135deg, rgba(130,175,255,.18), rgba(255,120,200,.10));
+    color:var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    font-weight:750;
+    cursor:pointer;
+  }
+  .smallBtn:hover{transform: translateY(-1px)}
+  .list{display:flex; flex-direction:column; gap:10px; margin-top:14px}
+  .item{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:12px 12px;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(0,0,0,.22);
+  }
+  .item .left{display:flex; align-items:center; gap:10px}
+  .chk{width:18px; height:18px; border-radius:6px; border:1px solid rgba(255,255,255,.18); display:grid; place-items:center}
+  .chk.on{background: rgba(130,175,255,.18); border-color: rgba(130,175,255,.35)}
+  .chk.on:before{content:"✓"; font-size:12px; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+  .item b{font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size:13.5px}
+  .item small{color:var(--muted2); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
+  .del{
+    width:38px; height:38px; border-radius:14px;
+    border:1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.04);
+    color: rgba(255,255,255,.86);
+    cursor:pointer;
+  }
+  .del:hover{background: rgba(255,255,255,.08)}
+  .tot{display:flex; justify-content:space-between; gap:10px; margin-top:14px; color:var(--muted); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size:13px}
+
+  /* Contact */
+  form{display:flex; flex-direction:column; gap:10px}
+  textarea.input{height:110px; padding:10px 12px; resize:vertical}
+
+  /* Footer */
+  footer{
+    padding:40px 0 60px;
+    border-top: 1px solid rgba(255,255,255,.07);
+    background: linear-gradient(to top, rgba(255,255,255,.03), transparent);
+  }
+  .foot{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:18px;
+    align-items:start;
+  }
+  @media (min-width:940px){
+    .foot{grid-template-columns: 1.2fr .8fr .8fr .8fr;}
+  }
+  .foot h4{margin:0 0 10px; font-size:14px; letter-spacing:.08em; text-transform:uppercase; color:rgba(255,255,255,.82); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;}
+  .foot a{display:block; padding:8px 0; color:rgba(255,255,255,.70); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size:13px}
+  .foot a:hover{color:rgba(255,255,255,.92)}
+  .copyright{margin-top:16px; color:rgba(255,255,255,.55); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size:12px}
+  .social{display:flex; gap:10px; margin-top:12px}
+  .icon{
+    width:38px; height:38px; border-radius:14px;
+    border:1px solid rgba(255,255,255,.10);
+    background: rgba(255,255,255,.03);
+    display:grid; place-items:center;
+  }
+
+  /* Small helper */
+  .spacerTop{height:62px} /* for fixed header */
+</style>
+</head>
+<body>
+<button class="menu-btn" id="menuBtn" aria-label="Open menu"><span></span><span></span><span></span></button>
+
+<div class="overlay" id="overlay"></div>
+<aside class="side" id="side" aria-label="Site menu">
+  <div class="sideTop">
+    <div class="sideTitle">Menu</div>
+    <button class="x" id="menuClose" aria-label="Close menu">×</button>
+  </div>
+
+  <div class="sideNav">
+    <a class="slink" href="#home">Home</a>
+
+    <button class="sacc" type="button" data-acc="product">
+      <span>Product</span><span class="chev">▾</span>
+    </button>
+    <div class="sub" id="acc-product">
+      <a href="#marquee">Trending</a>
+      <a href="#shopping">Shopping list</a>
+      <a href="#contact">Contact</a>
+    </div>
+
+    <button class="sacc" type="button" data-acc="sort">
+      <span>Short-by</span><span class="chev">▾</span>
+    </button>
+    <div class="sub" id="acc-sort">
+      <a href="#marquee">Newest</a>
+      <a href="#marquee">Price: Low → High</a>
+      <a href="#marquee">Price: High → Low</a>
+    </div>
+
+    <a class="slink" href="#faq">FAQ</a>
+    <a class="slink" href="#contact">Contact</a>
+  </div>
+</aside>
+
+<header class="topbar" role="banner">
+  <div class="wrap">
+    <div class="row">
+      <div class="brand">
+        <div class="mark"></div>
+        <span>SQ Online Shop</span>
+      </div>
+
+      <nav class="navlinks hide-md" aria-label="Primary">
+        <a href="#marquee">Trending</a>
+        <a href="#shopping">Shopping list</a>
+        <a href="#contact">Contact</a>
+      </nav>
+
+      <a class="cta hide-md" href="#contact">Let’s talk</a>
+    </div>
+  </div>
+</header>
+
+<div class="spacerTop" aria-hidden="true"></div>
+
+<main id="home">
+  <section class="hero">
+    <div class="wrap">
+      <div class="heroGrid">
+        <div class="reveal in">
+          <div class="pill">
+            <span class="dot"></span>
+            <span style="font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size:13px; color:rgba(255,255,255,.78)">
+              Luxury dark storefront — minimal, fast, viral-ready
+            </span>
+          </div>
+
+          <h1 class="hTitle">Your products, <span style="background:linear-gradient(135deg, rgba(130,175,255,.95), rgba(255,120,200,.85)); -webkit-background-clip:text; background-clip:text; color:transparent">moving</span> like cinema.</h1>
+          <p class="hLead">
+            Premium typography, glass UI, and scroll animations that feel expensive.
+            Built as a single file — no Framer, no extra brands, no mess.
+          </p>
+
+          <div class="heroActions">
+            <a class="btn primary" href="#marquee">See trending</a>
+            <a class="btn" href="#shopping">Build shopping list</a>
+          </div>
+
+          <div class="kpis">
+            <div class="kpi"><b>Two-track marquee</b><span>Left + right motion</span></div>
+            <div class="kpi"><b>Scroll reveal</b><span>Blur + slide + fade</span></div>
+            <div class="kpi"><b>Side menu</b><span>Accordion like video</span></div>
+          </div>
+        </div>
+
+        <div class="heroCard reveal delay1">
+          <div class="miniHeader">
+            <small>Live preview</small>
+            <span class="chip"><i></i> SQ COLLECTION</span>
+          </div>
+          <div class="cards" id="heroCards"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="marquee">
+    <div class="wrap">
+      <div class="sectionHead reveal">
+        <div>
+          <h2>Auto-moving products</h2>
+          <p>Exactly the vibe from your video: motion-first product rails. Hover to pause. Smooth loop.</p>
+        </div>
+        <a class="cta" href="#shopping">Add to list</a>
+      </div>
+
+      <div class="marquee reveal">
+        <div class="track" id="trackL" aria-label="Products moving left"></div>
+      </div>
+
+      <div style="height:14px"></div>
+
+      <div class="marquee reveal delay1">
+        <div class="track r" id="trackR" aria-label="Products moving right"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="shopping">
+    <div class="wrap">
+      <div class="sectionHead reveal">
+        <div>
+          <h2>Shopping list</h2>
+          <p>Add items you want to buy. Tick them off. Clean, simple, and looks premium.</p>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel reveal">
+          <h3>Quick add</h3>
+          <p>Type an item name (optional price). Example: <b>“Air Humidifier — 29”</b></p>
+          <div class="inputRow">
+            <input class="input" id="itemInput" placeholder="Item — price (optional)"/>
+            <button class="smallBtn" id="addBtn">Add</button>
+          </div>
+
+          <div class="list" id="list"></div>
+          <div class="tot">
+            <span id="countTxt">0 items</span>
+            <span id="totalTxt">Total: $0</span>
+          </div>
+        </div>
+
+        <div class="panel reveal delay1">
+          <h3>Contact</h3>
+          <p>Want this connected to Shopify / email sending later? This form is ready for you to hook.</p>
+          <form id="contactForm">
+            <input class="input" name="name" placeholder="Your name" required />
+            <input class="input" name="email" placeholder="Email" type="email" required />
+            <textarea class="input" name="message" placeholder="Tell me what you want…" required></textarea>
+            <button class="smallBtn" type="submit">Send message</button>
+            <div id="contactNote" style="color:rgba(255,255,255,.65); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size:12.5px;"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="sectionHead reveal">
+        <div>
+          <h2>FAQ</h2>
+          <p>Small answers, no drama.</p>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel reveal">
+          <h3>Can I replace the product images?</h3>
+          <p>Yes. Replace each <b>img src</b> with your own URL or Base64 image. Single-file stays single-file.</p>
+        </div>
+        <div class="panel reveal delay1">
+          <h3>Is this without Framer / Cometica?</h3>
+          <p>Yes. Only plain HTML + CSS + JavaScript inside one file.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <div class="brand" style="margin-bottom:10px">
+          <div class="mark"></div><span>SQ Online Shop</span>
+        </div>
+        <div style="color:rgba(255,255,255,.70); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; font-size:13px; line-height:1.6">
+          A luxury dark storefront template — motion-forward, clean, and fast.
+        </div>
+        <div class="social" aria-label="Social">
+          <div class="icon" title="Instagram">⌁</div>
+          <div class="icon" title="TikTok">⟠</div>
+          <div class="icon" title="X">×</div>
+        </div>
+        <div class="copyright">© <span id="year"></span> SQ Online. All rights reserved.</div>
+      </div>
+
+      <div>
+        <h4>Shop</h4>
+        <a href="#marquee">Trending</a>
+        <a href="#shopping">Shopping list</a>
+        <a href="#contact" onclick="document.getElementById('contactForm').scrollIntoView({behavior:'smooth'}); return false;">Contact</a>
+      </div>
+
+      <div>
+        <h4>Company</h4>
+        <a href="#faq">FAQ</a>
+        <a href="#home">Home</a>
+        <a href="#marquee">Products</a>
+      </div>
+
+      <div>
+        <h4>Legal</h4>
+        <a href="#">Privacy (placeholder)</a>
+        <a href="#">Terms (placeholder)</a>
+        <a href="#">Refunds (placeholder)</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ===== Data + images (replace these easily) ===== */
+const products = [
+  {name:"H09 Pro Humidifier", price:29, img: svgImg("H09 Pro", "Mist • Aromatherapy")},
+  {name:"Minimal Desk Lamp", price:19, img: svgImg("Lamp", "Warm glow")},
+  {name:"Smart Watch Ultra", price:59, img: svgImg("Watch", "Premium strap")},
+  {name:"Aroma Diffuser", price:24, img: svgImg("Aroma", "Quiet mode")},
+  {name:"Wireless Earbuds", price:39, img: svgImg("Earbuds", "Noise cancel")},
+  {name:"Travel Bottle Set", price:14, img: svgImg("Travel", "Carry easy")},
+  {name:"Night Light Cube", price:17, img: svgImg("Light", "Soft ambience")},
+  {name:"Mini Fan Pro", price:22, img: svgImg("Fan", "Silent breeze")},
+];
+
+function svgImg(title, subtitle){
+  const svg = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="800" height="500">
+    <defs>
+      <radialGradient id="g1" cx="25%" cy="25%" r="80%">
+        <stop offset="0%" stop-color="rgba(130,175,255,.35)"/>
+        <stop offset="60%" stop-color="rgba(255,120,200,.18)"/>
+        <stop offset="100%" stop-color="rgba(0,0,0,.0)"/>
+      </radialGradient>
+      <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="rgba(255,255,255,.10)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,.02)"/>
+      </linearGradient>
+    </defs>
+    <rect width="100%" height="100%" fill="rgba(0,0,0,.25)"/>
+    <rect width="100%" height="100%" fill="url(#g1)"/>
+    <rect x="34" y="34" width="732" height="432" rx="28" fill="url(#g2)" stroke="rgba(255,255,255,.12)"/>
+    <text x="70" y="150" fill="rgba(255,255,255,.92)" font-size="56" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial" font-weight="800">${escapeXml(title)}</text>
+    <text x="70" y="210" fill="rgba(255,255,255,.72)" font-size="26" font-family="system-ui, -apple-system, Segoe UI, Roboto, Arial">${escapeXml(subtitle)}</text>
+    <circle cx="670" cy="150" r="44" fill="rgba(130,175,255,.18)" stroke="rgba(130,175,255,.35)"/>
+    <circle cx="710" cy="210" r="26" fill="rgba(255,120,200,.16)" stroke="rgba(255,120,200,.32)"/>
+  </svg>`;
+  return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg.trim());
+}
+function escapeXml(s){return (s||"").replace(/[<>&"]/g, c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]))}
+
+/* ===== Build hero cards ===== */
+const heroCardsEl = document.getElementById("heroCards");
+function heroCard(p){
+  const el = document.createElement("div");
+  el.className = "card";
+  el.innerHTML = `
+    <div class="thumb"><img src="${p.img}" alt="${p.name}"></div>
+    <div class="meta"><b>${p.name}</b><span>$${p.price}</span></div>`;
+  return el;
+}
+products.slice(0,4).forEach(p=>heroCardsEl.appendChild(heroCard(p)));
+
+/* ===== Build marquee rails (two directions) ===== */
+function productCard(p){
+  const el = document.createElement("a");
+  el.className = "pCard";
+  el.href = "#shopping";
+  el.innerHTML = `
+    <div class="pImg"><img src="${p.img}" alt="${p.name}"></div>
+    <div class="pInfo"><div><b>${p.name}</b><div style="height:4px"></div><span>Premium dark UI</span></div><span>$${p.price}</span></div>`;
+  el.addEventListener("click", (e)=> {
+    // quick add
+    addItem(`${p.name} — ${p.price}`);
+  });
+  return el;
+}
+function fillTrack(trackEl, items){
+  // duplicate for seamless loop
+  const doubled = items.concat(items);
+  doubled.forEach(p=>trackEl.appendChild(productCard(p)));
+}
+fillTrack(document.getElementById("trackL"), products);
+fillTrack(document.getElementById("trackR"), products.slice().reverse());
+
+/* ===== Side menu behavior ===== */
+const menuBtn = document.getElementById("menuBtn");
+const overlay = document.getElementById("overlay");
+const menuClose = document.getElementById("menuClose");
+
+function openMenu(){document.body.classList.add("menu-open")}
+function closeMenu(){document.body.classList.remove("menu-open")}
+menuBtn.addEventListener("click", openMenu);
+overlay.addEventListener("click", closeMenu);
+menuClose.addEventListener("click", closeMenu);
+document.querySelectorAll(".sideNav a").forEach(a=>a.addEventListener("click", closeMenu));
+
+document.querySelectorAll(".sacc").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const key = btn.getAttribute("data-acc");
+    const box = document.getElementById("acc-" + key);
+    if(!box) return;
+    const isOpen = box.style.display === "block";
+    box.style.display = isOpen ? "none" : "block";
+  });
+});
+
+/* ===== Scroll reveal (cinematic) ===== */
+const obs = new IntersectionObserver((entries)=>{
+  for(const e of entries){
+    if(e.isIntersecting) e.target.classList.add("in");
+  }
+},{threshold: .14});
+document.querySelectorAll(".reveal").forEach(el=>obs.observe(el));
+
+/* ===== Shopping list ===== */
+const listEl = document.getElementById("list");
+const itemInput = document.getElementById("itemInput");
+const addBtn = document.getElementById("addBtn");
+const countTxt = document.getElementById("countTxt");
+const totalTxt = document.getElementById("totalTxt");
+
+let items = [
+  {name:"H09 Pro Humidifier", price:29, done:false},
+  {name:"Wireless Earbuds", price:39, done:false},
+];
+
+function parseLine(line){
+  // allow "name — 29" or "name - 29" or "name 29"
+  const m = line.match(/^(.*?)(?:\s*[—-]\s*|\s+)(\d+(?:\.\d+)?)\s*$/);
+  if(m) return {name:m[1].trim(), price:Number(m[2])};
+  return {name:line.trim(), price:0};
+}
+
+function render(){
+  listEl.innerHTML = "";
+  items.forEach((it, idx)=>{
+    const row = document.createElement("div");
+    row.className = "item";
+    row.innerHTML = `
+      <div class="left">
+        <div class="chk ${it.done ? "on":""}" role="button" aria-label="toggle"></div>
+        <div>
+          <b>${it.name}</b><div style="height:3px"></div>
+          <small>${it.price ? "$"+it.price : "No price"}</small>
+        </div>
+      </div>
+      <button class="del" aria-label="delete">×</button>
+    `;
+    row.querySelector(".chk").addEventListener("click", ()=>{
+      items[idx].done = !items[idx].done; render();
+    });
+    row.querySelector(".del").addEventListener("click", ()=>{
+      items.splice(idx,1); render();
+    });
+    listEl.appendChild(row);
+  });
+
+  const total = items.reduce((s,it)=>s + (it.price||0), 0);
+  countTxt.textContent = `${items.length} item${items.length===1?"":"s"}`;
+  totalTxt.textContent = `Total: $${total.toFixed(0)}`;
+}
+function addItem(text){
+  const t = (text||"").trim();
+  if(!t) return;
+  const p = parseLine(t);
+  if(!p.name) return;
+  items.unshift({name:p.name, price:p.price||0, done:false});
+  itemInput.value = "";
+  render();
+}
+addBtn.addEventListener("click", ()=>addItem(itemInput.value));
+itemInput.addEventListener("keydown", (e)=>{ if(e.key==="Enter"){ e.preventDefault(); addItem(itemInput.value);} });
+render();
+
+/* ===== Contact form (demo) ===== */
+const form = document.getElementById("contactForm");
+const note = document.getElementById("contactNote");
+form.addEventListener("submit", (e)=>{
+  e.preventDefault();
+  note.textContent = "Sent (demo). Later we can connect this to your real email.";
+  setTimeout(()=>note.textContent="", 3500);
+  form.reset();
+});
+
+/* ===== Misc ===== */
+document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
